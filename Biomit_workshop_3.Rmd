@@ -1,0 +1,160 @@
+---
+title: "Biomiot R workshop 3 - beutiful data driven documents with R markdown"
+date:  "Last modified on `r format(Sys.time(), '%X    %d/%m/%y')`"
+author: "by Tomasz Stepkowski"
+output:
+  html_document:
+    df_print: paged
+    theme: spacelab 
+    highlight: haddock
+    toc: yes
+    toc_float:
+      collapsed: false
+  pdf_document:
+    toc: yes
+urlcolor: blue
+---
+<style>
+
+   {color: #8b0000};
+
+</style>
+
+
+# Introduction to R Markdown 
+
+## What is R markdown?
+
+From the [R Markdown Website](http://rmarkdown.rstudio.com):
+
+
+***"Analyze. Share. Reproduce.***
+***Your data tells a story. Tell it with R Markdown. Turn your analyses into high quality documents, reports, presentations and dashboards."***
+
+
+From the introduction of the [Definite guide to R markdown](https://bookdown.org/yihui/rmarkdown/basics.html):
+
+***"R Markdown provides an authoring framework for data science. You can use a single R Markdown file to both    save and execute code, and generate high quality reports that can be shared with an audience. R Markdown was designed for easier reproducibility, since both the computing code and narratives are in the same document, and results are automatically generated from the source code. R Markdown supports dozens of static and dynamic/interactive output formats.If you prefer a video introduction to R Markdown, we recommend that you check out the website https://rmarkdown.rstudio.com, and watch the videos in the “Get Started” section, which cover the basics of R Markdown."***
+
+## What can be created using R markdown?
+
+With R Markdown, you write a single .Rmd file and then use it to render finished output in a variety of formats:
+
+
+* <strong>Static documents:
+  + HTML
+  + PDF
+  + Word
+  + blog
+  + Scientific journal style templates available
+
+* Interactive documents: 
+  + Interactive shiny web apps 
+  + Static interactive dashboards with embedded HTML widgets
+
+* Presentations
+* Books 
+* Great R coding tutorials like this one:)
+* and many other... </strong>
+
+## Reproducible is the keyword here!
+
+With R markdown you can easily create `reproducible analyses workflows`. You found an error in the data, new data was added, you need to process it in a slightly different way - you may just need to change one parameter in the input and `voilà`  or perform almost everything from scratch...I definitely prefer having a reproducible `*.Rmd` file for may analyses. 
+
+
+# R markdow syntax basics {#h1 }
+
+## Headers
+
+Headers are created using `#` - the number of `#` correspond to the header, subheader(header 2),  subsubheader(header 3) etc.
+
+
+`#### Header 4`
+
+`##### Header 5`
+
+`###### Header 6`
+
+gives:
+
+#### Header 4
+
+##### Header 5
+
+###### Header 6
+
+
+etc. as you see only headers 1:3 are by default automatically included in the table of contents.
+
+## Inline code formating and code evaluation within text paragraphs
+
+You can `display code formatting` in the text parts of your document by surrounding it with  `
+ 
+To evaluate r code inside the text block you need to use "r some code" for example to display current date with  `Sys.Date()`  you can write r Sys.Date() surrounded with ticks which gives `r Sys.Date()` for the day I have knitted this document .
+
+```{r}
+# evaluating r code inside text paragraphs
+# the syntax is as follows `r some code` 
+
+# to display r formating use `this will be formatted to code` 
+
+```
+
+## Adding code chunks
+```{r}
+# The code chunks are created by introducing 
+#  ``` {r}
+#  This would be a code chunk
+#
+#  ```` at the beginning of the lines 
+```
+
+## Adding links
+The syntax for adding links is as follows:
+```{r}
+# [Link_name](path)
+```
+Lets ad link to [Bigest R repository - the CRAN](https://cran.r-project.org/)
+
+## Adding images
+The syntax for adding images is as follows:
+```{r}
+# ![caption](path)
+
+```
+Lets ad the image of the [famous grumpy cat](https://pl.wikipedia.org/wiki/Grumpy_Cat)
+![grumpy cat](https://ichef.bbci.co.uk/news/800/cpsprodpb/26AC/production/_107000990_grumpycat5.jpg) 
+
+## Formating text
+
+```{r}
+# **bold** or __bold__
+# `*italic* or _italic_
+#` ***bold and italic*** or ___bold and italic___
+#``~~strikethrough~~
+```
+gives:
+
+**bold** or __bold__
+
+*italic* or _italic_
+
+***bold and italic*** or ___bold and italic___
+
+~~strikethrough~~
+
+
+# The NHANES dataset
+
+`library(NHANES)` provides the data from the [US National Health and Nutrition Examination Survey](https://www.cdc.gov/nchs/nhanes/index.htm). It may be considered as a random sample of the US population. We will use it as an example dataset during this workshop.
+
+```{r message=FALSE, warning=FALSE}
+library(NHANES)  # you may need to install it with install.packages()
+library(dplyr)
+# Lets  examine the structure of the NHANES dataset
+glimpse(NHANES)
+# first rows
+head(NHANES)
+```
+
+
