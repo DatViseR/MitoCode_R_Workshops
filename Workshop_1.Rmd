@@ -1,0 +1,430 @@
+---
+title: "Biomiot R workshop 1 - Intro to R Studio and R data types"
+date:  "Last modified on `r format(Sys.time(), '%X    %d/%m/%y')`"
+author: "by Tomasz Stepkowski"
+output:
+  html_document:
+    df_print: paged
+    theme: spacelab 
+    highlight: haddock
+    toc: yes
+    toc_float:
+      collapsed: false
+  pdf_document:
+    toc: yes
+urlcolor: blue
+---
+
+# Introduction to R and its programming environment 
+
+## What is R?
+ 
+R is an open source interpreted programming language distributed under GNU general public license.It has a huge support community and thousands of available programming libraries (bunch of useful functions) that can be used for various specialized purposes. It is most powerful in hands of statisticians, data scientists, bioinformaticians and data journalists and usually used for the following  tasks: 
+
+* General statistics
+* Statistical modeling 
+* Data visualization
+* Data wrangling 
+* Machine learning
+* Reproducible analysis pipelines
+* Interactive web dashboards
+* Bioinformatics
+* Highthroupout data analysis
+* Data journalism
+* Geo spatial data analyses 
+* etc. ***Whatever is possible in data analysis and visualization you can probably do it in R and usually a specialized library for this purpose can be found in the online repository***
+
+Among biologist R is most popular because of the ease in which it is possible to create custom high resolution publication quality plots, statistical analyses and the plethora of libraries related to high-thropout biological data analyses which can be downloaded from the [Bioconductor project repository .](https://www.bioconductor.org/) 
+
+## What is RStudio?
+
+[RStudio](https://rstudio.com/)is an integrated development environment (IDE) for R. It includes a console, syntax-highlighting editor that supports direct code execution, as well as tools for plotting, history, debugging and workspace management
+
+##### Instaling R studio  
+The free version of Rstudio can be downloaded from [R Studio webpage](ttps://rstudio.com/products/rstudio/download/)
+  
+## An overview of the Rstudio features 
+
+RStudio is composed of 4 panels:
+
+* Top left - here you write and run your code scripts, menage files and export them to various output formats 
+
+* Bottom left - various terminals - an programming R console, system terminal and others
+
+* Top right - the data panels where all the datatypes in the environment are listed, you can create new, import from various sources etc. When you use version control system [git or svn] an additional tab appears here.  
+
+* Bottom right - This panel contains tabs: files - listing files in your current project or working directory; Plots - for displaying and exporting plots; Packages - for installing and downloading libraries (packages); Help- to display help for functions and features ; Viewer - displaying Rmarkdown output html files
+
+#### What is R project?
+  R project is created by "File -> New project" -  it saves all the files in the current project/working directory. When working with multiple files it is advised to work using R projects and/or version control. When you open the project all the files from the last project session are automatically loaded to R studio. 
+
+#### What is [R Markdown](https://rmarkdown.rstudio.com/) file?
+
+This workshop notes are made with R Markdown.R Markdown is a file format for making reproducible documents with R Studio. An R Markdown document is written in markdown (an easy-to-write plain text format) and contains chunks of embedded code. The output of the code may be displayed bellow the chunk when using "R notebook" for displaying R markdown files. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents.
+
+Code chunks in R Markdown files are started and ended with ` ``` ` signs. The start is followed by programming language name such as ` {r} `  or `{python}`. The usfeul shortcut for inserting an R code chunk in R studio is `ctr+alt+i`. The `# ` is used for ` #commenting the code` - always comment your code - both for other readers and future you. Even if you think its easy few weeks later you may forget what its all about... 
+
+```{r}
+ # This is a chunk of code written in R Markdown. Below you will find the
+ # output.THe # sign is used for commenting code in R
+
+2+2
+2+2 == 4
+```
+
+# Data types in R
+
+## Atomic vectors - basic data types
+The basic data type in R is the **atomic vector** - it may be made of integers (`1,2,3,4 etc `), floating point numbers (ex .0.333333), strings or characters (` "this is string" `) and boolean logical values (`TRUE` or `FALSE`). R provides **vectorisation** out of the box so you can perform vector element wise arithmetic for efficient calculations. **One type of vector can contain only single type of data !!!**
+ 
+### Numeric vectors 
+
+Numeric vectors are build of integers or double floating point precision numbers. 
+
+```{r}
+# Lets create an integer vector variable(object). The c() function allows 
+# combining smaller objects into larger data structures.
+# "<-"  is the assignment operator to assign a variable name to an object in R.
+# Always use "<-" for assignment in r although "=" may work it should not be
+# used for assigments of variables in r 
+
+numeric_vector   <- c(1,2,5,8, 5.5,  234463)
+numeric_vector_2 <- c(2,4,10,2, 2.5,  345)
+
+# class(object) answers what class(data type) is the particular object 
+class(numeric_vector)
+```
+
+#### Arithmetical Operation on vectors are performed element_wise
+```{r}
+numeric_vector_3 <- numeric_vector * numeric_vector_2
+numeric_vector_3
+
+```
+
+as you can see the multiplication was performed element wise. 
+
+When one of the vectors is shorter its elements are recycled to perform calculations.
+
+```{r}
+long_vector <- c (1,2,3,4,5,6,7,8)
+shorter_vector <- c(1,4) 
+result <- long_vector*shorter_vector # shorter becomes c(1,4, 1,4, 1,4,1,4)
+result
+```
+
+#### Integer vectors
+
+Integer vector is a type of numeric vector containing only integers it is constructed with L suffix. Integer vectors are limited to ~ 2 billion and use less computing memory compared with numeric. 
+
+```{r}
+Integer_vector <- c(1L,5L, 5L,6L, 7L)
+Integer_vector
+class(Integer_vector)
+```
+### Character vectors / strings 
+
+```{r}
+character_vector <- c("Chopin", "Mozart", "Bach")
+class(character_vector)
+character_vector
+```
+### Logical vectors
+
+```{r}
+# TRUE , FALSE or logical operations evaluating to true or false
+
+logical_vector <- c(TRUE, FALSE, TRUE, 5>7, 6==6, 2 < 5)
+class(logical_vector)
+logical_vector
+
+```
+
+### Coersion of different data types
+
+As vector can contain only one type of data R will convert from more specific types to more general types when they are mixed.
+
+```{r}
+vector_with_numbers_coerced_to_characters <- c("Aplle", 4, 6, "Green", "Bicycle")
+class(vector_with_numbers_coerced_to_characters)
+vector_with_numbers_coerced_to_characters
+
+```
+
+## Complex data types
+
+Complex data types in R are build from atomic vectors:
+
+### Matrix 
+
+A matrix is a two-dimensional rectangular data set. It can be created using a vector input to the matrix function. **Matrix can only contain one type of data - numeric, character or logical(boolean)**. Calculations using matrix are fast.
+
+```{r}
+
+# Matrix build by_rows
+Biomit_matrix_by_row <- matrix(
+c("In",  "Biomit", "laboratory","we" ,
+"all" ,"do", "perform", "cutting", "edge",
+"mitochondrial",  "science", "lets", "pick",
+"up","some" ,"r", "programming", "skills"
+ ), 
+ nrow =3, ncol = 6, byrow = TRUE)
+
+Biomit_matrix_by_row
+
+```
+
+```{r}
+# Matrix build by_columns
+
+Biomit_matrix_by_col <- matrix(
+c("In",  "Biomit", "laboratory","we" ,"all" , "do" ,
+  "perform", "cutting", "edge","mitochondrial",
+  "science", "lets", "pick", "up",
+"some" ,"r", "programming", "skills"
+),
+nrow =3, ncol = 6, byrow = FALSE)
+
+Biomit_matrix_by_col
+
+```
+
+### List
+
+Lists can contain different types of data.
+
+```{r}
+# List with various types of data inside:
+
+List_with_different_data  <- list(
+  c(2,5,3), 21.3, median, c(TRUE, FALSE, TRUE),
+  "computer", "camera", c("Opal", "Diamond")
+  )
+
+List_with_different_data
+
+```
+
+### Data frames
+
+Data frames are tabular data objects. **Unlike a matrix in data frame each column can contain different modes of data.** The first column can be numeric while the second column can be character and third column can be logical. We create data frame using data.frame() function. Calculations on data frames are slower than on matrices but they are much more handy and generally used for small datasets. 
+
+```{r}
+# Here we create a small dataframe containing data for different musicians
+Music <- data.frame(
+  
+  Musicians <- c("Metalica", "Quenn", "Rolling Stones", "Mozart", "Chopin"),# character
+  Is_classical <- c(FALSE, FALSE, FALSE, TRUE, TRUE ),#logical
+  Century  <- c(21, 20, 21, 18, 19 )#numeric
+                  )
+# naming column(variables)                    
+names(Music) <- c("Musicians", "Is_classical?", "Century")
+Music
+```
+
+### Factors
+
+Factors are the data types which are created using a vector. They store the vectors along with the distinct values for the elements in the vector as labels. The labels are always "characters" irrespective of whether they correspond to numeric ,character or Boolean etc. in the vector they describe. Factors are useful in statistical visualization and modeling. Factors are created using the factor() function. The nlevels functions gives the count of levels. Factors can be ordinal (when their levels are sortable) or nominal.  
+
+
+```{r}
+# Lets create ordinal factor
+ordinal_factor <- factor(
+  c("small", "big", "huge", "huge" , "small", "enormous", "big"), 
+  levels = c("small", "big", "huge", "enormous"), ordered = TRUE 
+                        ) 
+ordinal_factor
+nlevels(ordinal_factor)
+
+
+```
+
+
+```{r}
+# Lets create unordered factor
+nominal_factor <- factor(
+  c("Blue", "Yellow", "Green", "Purple" , "Pink", "Black",
+    "Green", "Pink", "Black")
+                        )
+nominal_factor
+```
+
+## Operators
+
+R supports following operators:
+
+* Arithmetic Operators
+* Relational Operators
+* Logical Operators
+* Assignment Operators
+* Miscellaneous other Operators
+
+#### Arithmetic operators
+
+1. `*` - multiplication 
+2. `/` - division
+3. `-` subtraction
+4. `+` addition
+5. `^` - exponent
+6. `%%` - modulo (remainder of the division)
+
+```{r}
+#exponent
+3^2  # = 3*3 = 9
+
+# %%modulo operator
+25 %% 8  # 25= 3*8 + remainder 1  so %%modulo = 1  
+
+```
+#### Relational operators
+
+1.  `>` higher ?
+2.  `<` smaller ?
+3.  `==`  equal  ?
+4.  `<=`  smaller or equal ?
+5.  `>=`  higher or equal ?
+6. `!=`   not equal ?
+
+#### Logical operators
+
+1. `&` and      TRUE & FALSE == FALSE   
+2. `|` or       TRUE | FALSE == TRUE
+3. `!` not      !TRUE == FALSE
+
+```{r}
+TRUE & FALSE   # = FALSE
+
+TRUE & FALSE == FALSE   # = TRUE
+
+```
+
+
+#### Assigment vs. equality
+
+* `<-`  is an operator used to assign something to a particular object
+* `=`   is used to assign attributes of a function such as `ordered = TRUE` in factor()
+* `==`  is used to test for equality
+
+```{r}
+
+2==2 
+2==3
+2!=2
+
+vector_logical2 <- c(2==2, 2==3, 2!=2)
+vector_logical2
+
+```
+
+#### Miscellaneous other Operators
+
+1. `:`  - creates series of numbers in a vector
+
+```{r}
+series <- c(2:16)
+series
+
+```
+2. `%in%`  - test for the particular occurrence in a vector
+```{r}
+series <- c(2:16)
+ 
+2 %in% series
+
+musicians <- c("Hattfield", "Mercury", "Vai", "Eminem")
+ 
+"Eminem" %in% musicians
+
+"Bon jovi" %in% musicians
+
+```
+
+3. `%>%` - the pipe operator introduced by `library(dplyr)` is used to feed the process on its right side with result of the process on its left side. It is widely used for complicated data analysis piplines to chain commands.
+
+```{r message=FALSE, warning=FALSE}
+# downloading functions availible in dplyr library
+library(dplyr)
+Music
+
+# lets create a new column in Music dataframe 
+#that will contain the  name of the musicians 
+# but only when they were still performing in 21 century.
+# The details of the pipeline and how the functions work 
+#is out of scope of this workshop. We will discuss it another time.
+
+Music2 <- Music %>% filter(Century == 21) %>%
+                    mutate(name = c("Hattfield", "Jagger"))
+Music2
+
+```
+
+
+## Accessing elements of data
+
+#### Accesing vector elements by `index`
+1. Indexing in `R` starts with 1 compared with for example `C`, `Java` or `Python` were it starts at `0`. To access particular element of the vector we use `[]` bracket
+```{r}
+ 
+some_numbers <- c(0:10)
+
+some_numbers
+some_numbers[0]  # returns "empty" vector
+some_numbers[1]  # returns firs element
+some_numbers[10]
+some_numbers[11] 
+some_numbers[-3]  # returns all the elements except third (2)
+some_numbers[2:5] # return element from 2 to 5
+some_numbers[c(1,5,11)]  # return particular indexed elements
+
+```
+
+#### Accesing vector elements by logical values
+
+```{r}
+
+Logical_substitution <- c(TRUE, FALSE, TRUE, FALSE,TRUE, FALSE,TRUE, FALSE,TRUE, FALSE)
+
+some_numbers[Logical_substitution]
+
+```
+
+#### Accesing elements of the list
+
+When we want to access elements of the list we may also use `[]` but the elements returned are also `a list`. If we want to extract particular elements of the "inside" list we have to use `[[]]` or `$` sign with a name of the element of the list. This will convert the elements of the `list` to a `atomic vector` that can be accessed with `[]`. 
+
+```{r}
+#displaying structure of the list that we have created before
+str(List_with_different_data)
+
+# give names to the elements of the list
+names(List_with_different_data) <- c("Vector", "Single_number", "function", "Logical", "character", "character2", "character_vector" )
+
+str(List_with_different_data)
+
+# Accessing list
+List_with_different_data[1]
+str(List_with_different_data[1])
+str(List_with_different_data[[1]])
+ 
+# [[]] and $  give the same result   
+List_with_different_data[[1]] == List_with_different_data$Vector   
+    
+
+```
+
+
+#### Accesing tabular data 
+
+The syntax for accessing tabular data (`dataframe`) is `[rows, columns]`.
+
+```{r}
+#structure of the dataframe we have created before
+str(Music)
+# Accessing 1 observation(row) and all variables(columns)
+Music[1,1:3]
+#Accessing third column and output as vector
+Music$Century
+Music[ , 3]  # empty slot means access all rows
+Music$Century == Music[ , 3]
+
+```

@@ -1,0 +1,256 @@
+---
+title: "Biomiot R workshop 2 - Intro to plotting with R - creating histograms with base and ggplot2 libraries"
+date:  "Last modified on `r format(Sys.time(), '%X    %d/%m/%y')`"
+author: "by Tomasz Stepkowski"
+output:
+  html_document:
+    df_print: paged
+    theme: spacelab 
+    highlight: haddock
+    toc: yes
+    toc_float:
+      collapsed: false
+  pdf_document:
+    toc: yes
+urlcolor: blue
+---
+
+# Creating histogram plots in R
+
+We are going to create two types of histograms - first the histogram based on the number of times a record falls into each of the bins on which the histogram is based and the second which shows approximation of the probability density on the y axis together with the density kernel function. We are going to use approach based on different R libraries - `base` and `ggplot2` and learn how to annotate the plots. 
+ 
+## Histograms with base R
+Lets get familiar with the data. We will use `mtcars` - a dataset about different cars that is provided with R.
+
+```{r}
+# Lets get familiar with the data.
+str(mtcars)
+```
+
+We will create histograms visualizing distribution of `mtcars$hp`(horsepower) and `mtcars$qsec` (1/4 mile time) that are deferentially distributed. We will create a 2 row 2 column grid to display 4 histograms - with count data and probability density approximation.
+
+At first we need to create a grid layout for displaying 4 histograms at once - We set this up using `par()` function with appropriate values of `mfrow = c(rows,columns)` argument - we want 2 rows 2 column layout. 
+
+```{r}
+par(mfrow = c(2,2))
+
+# first two histograms by row
+# Filling Upper left
+Hist_hp <- hist(mtcars$hp,
+                main = "Histogram base R - counts", 
+                ylab = "counts",
+                xlab = "Horsepower")
+# Flling upper right
+Hist_hp_freq <- hist(mtcars$hp, 
+                     main = "Histogram base R - density",
+                     ylab = "probability density", 
+                     xlab = "Horsepower",
+                     freq = FALSE ,
+                     col = "lightgreen")
+
+#ploting density kernel function on the second histogram 
+lines(density(mtcars$hp),
+      col = "red",
+      lty = 2 ,
+      lwd = 2 )
+
+# bottom histograms
+# filling bottom left 
+Hist_qsec <- hist(mtcars$qsec,
+                  ylab = "counts" ,
+                  xlab = "1/4 mile time",
+                  main = "")
+
+# filling bottom right 
+Hist_qsec_freq <- hist(mtcars$qsec, 
+                       ylab = "probability density",
+                       xlab = "1/4 mile time", 
+                       main = "", 
+                       freq = FALSE, 
+                       col = "lightgreen")
+
+
+```
+ 
+ 
+```{r}
+# Lets make the bins in both histograms of similar size
+
+# How to do it ? - check the documentation with ?hist() in the console or help(hist)
+
+# calculate mean and standard deviation and assign to variables
+mean_horsepower <- mean(mtcars$hp)
+sd_horsepower <- sd(mtcars$hp)
+
+par(mfrow = c(2,2))
+
+# The first histogram will have different number of bins characterized by breaks = argument
+Hist_hp <- hist(mtcars$hp, 
+                main = "Histogram base R - counts",
+                ylab = "counts", 
+                xlab = "Horsepower" , 
+                breaks = 22, 
+                col = "lightgreen")
+
+Hist_hp_freq <- hist(mtcars$hp, 
+                     main = "Histogram base R - density", 
+                     ylab = "probability density", 
+                     xlab = "Horsepower",
+                     freq = FALSE)
+
+lines(density(mtcars$hp), 
+      col = "red" ,
+      lty = 2 , 
+      lwd = 2 )
+
+# lets plot the normal distribution approximation for the mean and sd of horsepower
+lines(50:350,
+      dnorm(50:350, mean = mean_horsepower, sd = sd_horsepower),
+      col = "green", 
+      lwd = 2 )
+
+# Ledend for the lines
+legend("topright",
+       legend=c("Empirical density", "Theoretical density"),
+       col=c("red", "green"),
+       lty=2:1,
+       lwd = 2, 
+       cex=0.8, 
+       bg = "transparent" ,
+       border = "transparent" ,
+       bty = "n")
+
+Hist_qsec <- hist(mtcars$qsec, 
+                  ylab = "counts" ,
+                  xlab = "1/4 mile time",
+                  main = "")
+
+Hist_qsec_freq <- hist(mtcars$qsec,
+                       ylab = "probability density",
+                       xlab = "1/4 mile time", 
+                       main = "", 
+                       freq = FALSE)
+
+```
+
+
+## Histograms with ggplot2
+
+#### What is ggplot2
+
+`ggplot2` is a data visualization package and most popular package in R. Created by Hadley Wickham in 2005, ggplot2 is an implementation of Leland Wilkinson's Grammar of Graphics—a general scheme for data visualization which breaks up graphs into semantic components such as scales and layers. `ggplot2` can serve as a replacement for the `base` graphics in R and contains a number of defaults for web and print display for common plots.
+
+In `ggplot2` plots are created as by  `ggplot() function` "feeded" with  `geom() functions` which are both made of aesthetics functions (`aes()`) and attributes `atribute =`. AEsthetics are based on input data while attributes are purely graphical. Let`s demonstrate how it works. The syntax is as follows:
+
+
+  `Plot <- ggplot(dataframe, aes( x, y , ...) some_atribute = ...  )`+
+    `geom_...(optional aditional data,  aes(x, y, ...), some_atribute =...)`
+    
+    
+```{r}
+# we do not need to use dollar mtcars$hp to extract column as a vector
+# ggplot2 works also with only name of the columns in the dataframe 
+library(ggplot2)
+
+Hist_hp_ggplot2_1 <- ggplot(mtcars, aes(x = hp, y = ..density..))+
+  geom_histogram()
+
+Hist_hp_ggplot2_1 
+
+
+# Let`s make the plot similar to the one made with base R
+Hist_hp_ggplot2_2 <- ggplot(mtcars, aes(x = hp))+
+  geom_histogram(aes(fill= ..count.., y = ..density..), 
+                 binwidth = 50, 
+                 center = 75)+
+  scale_x_continuous(seq(50,350,50),
+                     breaks = seq(50,350,50))
+  
+ 
+# gpplots are objects so we can add layers to a saved object. 
+#Lets add density function
+
+ Hist_hp_ggplot2_2 +
+ geom_density(col = "red", 
+              lty = "dashed", 
+              size = 1)
+ 
+# Lets add theoretical distribution function and make it little bit prettier  
+
+Hist_hp_ggplot2_2 +
+ geom_density(col = "red", 
+              lty = "dashed",
+              size = 1)+
+  
+  #ploting theoretical distribution
+  
+ stat_function(fun=dnorm,
+               color="green",
+               args=list(mean=mean(mtcars$hp), 
+                         sd=sd(mtcars$hp)
+                         )
+               )+
+
+  # white background
+  theme_minimal()
+```
+
+### Creating your own functions - its getting hotter
+
+We can create a reproducible function for creating such plots.
+The basic syntax for creating a function is as follows: 
+
+ `function_name <- function(obligatory_argument, obligatory_argument_2 ,  default argument = X ) {operation based on arguments}` 
+ 
+
+
+
+```{r}
+# Lets make a reproducible function for such a plot 
+
+library(ggplot2)
+draw_histogram_with_density_functions <- function(dataframe,
+                                                  column,
+                                                  binwidth,
+                                              center = binwidth+1/2*binwidth)
+  {
+  Plot <-  ggplot(dataframe, aes(x = column))+
+  geom_histogram(aes(fill= ..count.., y = ..density..), 
+                 binwidth = binwidth,
+                 center = center)+
+  scale_x_continuous(seq(binwidth,
+                         max(column),
+                         binwidth),
+                     breaks = seq(binwidth,
+                                 max(column),
+                                 binwidth))+
+  geom_density(col = "red", 
+               lty = "dashed", 
+               size = 1)+
+  xlab("column")+
+ 
+  #plotting theoretical distribution 
+  stat_function(fun=dnorm,
+                color="green",
+                size = 1 ,
+                args=list(mean=mean(column), 
+                      sd=sd(column)))+
+                
+  # white background
+  theme_minimal()
+  return(Plot)
+}
+
+#lets test the function for other column of mtcars
+draw_histogram_with_density_functions(mtcars,mtcars$qsec, 1)
+
+# lets test it for other dataset 
+draw_histogram_with_density_functions(airquality, airquality$Temp, 2)
+
+```
+ This is how we can store complicated codes as functions to be easily available in the future. If someone created such functions for us we may even not be interested what is happening under the hood - we are just satisfied with the final effect. R has enormous programming community and you can find libraries of functions performing great variety of operations. The libraries can be downloaded, among others, from main R repository - the [CRAN - Comprehensive R Archive Network](https://cran.r-project.org/web/views/); bionformatics repository - [Bioconductor project](https://www.bioconductor.org/) and individual programmers repositories availible at [Github](https://github.com/)
+
+
+
+
+

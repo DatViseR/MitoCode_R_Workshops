@@ -1,0 +1,98 @@
+---
+title: "Problem w R ale nie kumam o co kaman?"
+output: pdf_document
+---
+
+#### Primo prosty problem
+
+Hej mam trochę bardziej skomplikowany problem, który opisałem poniżej ale na początek może mi pomożesz z czymś bardzo prostym - dlaczego ta funkcja nie działa? Być może mój skomplikowany problem wynika z tego, że tego prostego nie rozumiem....
+
+```{r}
+mean_from_column <- function(dataframe, column){
+  
+  mean_col <- mean(dataframe$column)
+  return(mean_col)
+  }
+# nie działa bo mówi,że argument mean nie jest numeric 
+# ale przecież str(mtcars$hp) = numeric
+mean_from_column(mtcars, hp)
+#też nie działa
+mean_from_column(mtcars, mtcars$hp)
+
+
+mean_from_column2 <- function(dataframe, column){
+  
+  mean_col <- mean(column)
+  return(mean_col)
+  }
+
+
+mean_from_column2(mtcars,mtcars$hp)
+
+
+
+```
+
+
+#### Wykres histogram hp z mtcars dataframe
+
+A teraz real problem - zrobiłem wykres, który wyświetla histogram + funkcje rozkładu empirycznego i teoretycznego normalnego dla średniej i sd z próby:
+
+```{r}
+library(ggplot2)
+Histogram_hp_of_mtcars <- ggplot(mtcars, aes(x = hp))+
+  geom_histogram(aes(fill= ..count.., y = ..density..),
+                 binwidth = 50,
+                 center = 75)+
+  scale_x_continuous(seq(50,350,50), 
+                     breaks = seq(50,350,50))+
+  geom_density(col = "red", lty = "dashed", size = 1)+
+ 
+  #wykres prawdopodobieństwa dla rozkładu normalnego 
+   stat_function(fun=dnorm,color="green",
+                 args=list(mean=mean(mtcars$hp),sd=sd(mtcars$hp)))+
+
+  # white background
+  theme_minimal()
+
+```
+
+#### Ten sam wykres w funkcji nie działa do końca jak powinien
+
+Chciałbym zrobić funkcję , która będzie coś takiego tworzyć dla różnych danych:
+
+```{r}
+
+rysuje_histogram_i_funkcje_dystrybucji <- function(dataframe, column, binwidth, center = binwidth+ 1/2*binwidth){
+  Plot <-  ggplot(dataframe, aes(x = column))+
+  geom_histogram(aes(fill= ..count.., y = ..density..), 
+                 binwidth = binwidth,
+                 center = center)+
+  scale_x_continuous(seq(binwidth, max(column),binwidth),
+                     breaks = seq(binwidth, max(column),binwidth))+
+  geom_density(col = "red", lty = "dashed", size = 1)+
+ 
+  #ploting theoretical distribution - ten layer nie działa??? Pisze, że removed missing values?? 
+  stat_function(fun=dnorm,color="green",args=list(mean=mean(column), 
+                                  sd=sd(column)))+
+  # white background
+  theme_minimal()
+  return(Plot)
+}
+
+#test funkcji
+
+rysuje_histogram_i_funkcje_dystrybucji(mtcars,mtcars$hp,50,75)  
+  
+  
+```
+
+### Problem
+
+Nie wiem czemu nie działa mi zielona funkcja tak jak w skrypcie nie objętym w funkcję....już ze 3h nad tym siedzę, próbowałem różnych rzeczy np. wprowadzałem dodatkowe zmienne wewnątrz funkcji i działa mi tylko jak zrobię hardcoding i wpiszę liczby dla mean i sd wewnątrz stat_function()....
+
+
+
+
+
+
