@@ -17,7 +17,7 @@ urlcolor: blue
 
 # Creating histogram plots in R
 
-We are going to create two types of histograms - first the histogram based on the number of times a record falls into each of the bins on which the histogram is based and the second which shows approximation of the probability density on the y axis together with the density kernel function. We are going to use approach based on different R libraries - `base` and `ggplot2` and learn how to annotate the plots. 
+>We are going to create two types of histograms - first the histogram based on the number of times a record falls into each of the bins on which the histogram is based and the second which shows approximation of the probability density on the y axis together with the density kernel function. We are going to use approach based on different R libraries - `base` and `ggplot2` and learn how to annotate the plots. 
  
 ## Histograms with base R
 Lets get familiar with the data. We will use `mtcars` - a dataset about different cars that is provided with R.

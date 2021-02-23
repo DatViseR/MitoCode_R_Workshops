@@ -28,17 +28,17 @@ urlcolor: blue
 From the [R Markdown Website](http://rmarkdown.rstudio.com):
 
 
-***"Analyze. Share. Reproduce.***
+>***"Analyze. Share. Reproduce.***
 ***Your data tells a story. Tell it with R Markdown. Turn your analyses into high quality documents, reports, presentations and dashboards."***
 
 
 From the introduction of the [Definite guide to R markdown](https://bookdown.org/yihui/rmarkdown/basics.html):
 
-***"R Markdown provides an authoring framework for data science. You can use a single R Markdown file to both    save and execute code, and generate high quality reports that can be shared with an audience. R Markdown was designed for easier reproducibility, since both the computing code and narratives are in the same document, and results are automatically generated from the source code. R Markdown supports dozens of static and dynamic/interactive output formats.If you prefer a video introduction to R Markdown, we recommend that you check out the website https://rmarkdown.rstudio.com, and watch the videos in the “Get Started” section, which cover the basics of R Markdown."***
+>***"R Markdown provides an authoring framework for data science. You can use a single R Markdown file to both    save and execute code, and generate high quality reports that can be shared with an audience. R Markdown was designed for easier reproducibility, since both the computing code and narratives are in the same document, and results are automatically generated from the source code. R Markdown supports dozens of static and dynamic/interactive output formats.If you prefer a video introduction to R Markdown, we recommend that you check out the website https://rmarkdown.rstudio.com, and watch the videos in the “Get Started” section, which cover the basics of R Markdown."***
 
 ## What can be created using R markdown?
 
-With R Markdown, you write a single .Rmd file and then use it to render finished output in a variety of formats:
+With R Markdown, you write a single *.Rmd file and then use it to render finished output in a variety of formats:
 
 
 * <strong>Static documents:
