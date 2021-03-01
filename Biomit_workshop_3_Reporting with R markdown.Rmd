@@ -143,6 +143,8 @@ gives:
 
 ~~strikethrough~~
 
+## The YAML header
+
 
 # The NHANES dataset
 
@@ -155,6 +157,73 @@ library(dplyr)
 glimpse(NHANES)
 # first rows
 head(NHANES)
+```
+
+## Let`s create a variable and reference it in the text of a paragraph
+
+```{r smoking-by-gender}
+# computing the proportion of man and woman who currently smoke
+
+smoking <- NHANES %>% filter(Education == "Some College") %>% 
+                      group_by(Gender)%>% 
+                      summarize(proportion = mean(
+                               SmokeNow == "Yes", na.rm = TRUE)
+                               ) 
+smoking
+
+```
+
+### Referencing r variable in the paragraph
+
+>The data in the `NHANES` dataset point that among educated americans the proportions of smoking men and woman are `r smoking`:
+
+
+### Let`s create a simple data visalisation
+
+Here we are creating a simple proportion barchart. Later we will "parametrise" the code above and below (producing table and barchart) - this will allow us to analyse different grouping variable and functions inside summarise().
+
+TO keep your analysis clear it is advised to give your code chunks informative names that differ from the way you name variables or functions. For example I use `-` instead of `_` which I use for object/variable names. 
+
+```{r Proportion-barchart}
+library(ggplot2)
+
+Proportion_barchart <- NHANES %>% filter(Education == "Some College") %>% 
+                      ggplot(aes(x = Gender, fill = SmokeNow))+
+                      geom_bar(position = "Fill")+
+                      geom_text(aes(label=scales::percent(..count../sum(..count..))),
+                                    stat='count',position=position_fill(vjust=0.5))+
+                      theme_classic()
+
+Proportion_barchart
+
+
+```
+## Customising dimmensions of images and plots
+
+We use `fig.width = ` and `fig.height = ` inside `{r  }` at the beginning of the code chunk. The default unit are inches. You can also specify `dpi = ` or proportions of default ouput for example `out.width = "20%"`. Below we produce a wider version of the upper barchart.
+
+```{r Proportion-barchart-wide, out.width= "130%"}
+Proportion_barchart
+```
+
+## Figure align - center, left, right?
+ We can display figures at the left, right or center(default) - this is specified by `fig.align = " "`.
+```{r figure-aligment, fig.align= 'right', out.width= "80%"}
+Proportion_barchart
+
+```
+
+## Setting global code chunk options
+Different code chunk options such as graphical display of the output or different ways of how code is evaluated and displayed can be set up globally for the whole document. For this we use:
+
+`knitr::opts_chunk$set(fig.align = "left", fig.width = 5, echo = FALSE )` 
+ 
+inside the function you can specify everything that is normally inside `{r}` -  `{r what is here can be set up globally }` with `knitr::opts_chunk$set()`
+
+## Adding figure captions
+```{r adding-figure-captions, fig.cap= "Fig.1.The proportion of smokers among woman and man"}
+Proportion_barchart
+
 ```
 
 
