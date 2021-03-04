@@ -13,6 +13,11 @@ output:
   pdf_document:
     toc: yes
 urlcolor: blue
+params: 
+  group_var: Gender
+  analysis_var: SmokeNow
+  education: Some College
+
 ---
 <style>
 
@@ -59,7 +64,7 @@ With R Markdown, you write a single *.Rmd file and then use it to render finishe
 
 ## Reproducible is the keyword here!
 
-With R markdown you can easily create `reproducible analyses workflows`. You found an error in the data, new data was added, you need to process it in a slightly different way - you may just need to change one parameter in the input and `voilà`  or perform almost everything from scratch...I definitely prefer having a reproducible `*.Rmd` file for may analyses. 
+With R markdown you can easily create `reproducible analyses workflows`. You found an error in the data, new data was added, you need to process it in a slightly different way - you may just need to change one parameter in the input and `voilà`  or perform almost everything from scratch...I definitely prefer having a reproducible `*.Rmd` file for my analyses. 
 
 
 # R markdow syntax basics {#h1 }
@@ -108,6 +113,22 @@ To evaluate r code inside the text block you need to use "r some code" for examp
 #
 #  ```` at the beginning of the lines 
 ```
+### Code chunk code options inside `{r}`
+
+```{r echo=FALSE, warning=FALSE}
+library(kableExtra)
+
+# creating table for displaying code chunks options
+Code_is_run <- c(TRUE, TRUE, FALSE)
+Code_appears_in_report <- c(FALSE, FALSE, TRUE)
+Results_appear_in_report <- c(FALSE, TRUE, FALSE)
+code_chunk_options <- data.frame(row.names = c( "include = FALSE", "echo = FALSE", "eval = FALSE"), Code_is_run, Code_appears_in_report, Results_appear_in_report)
+#rendering table for code chunk options
+kbl(code_chunk_options) %>% kable_paper("hover", full_width = F)
+
+
+```
+
 
 ## Adding links
 The syntax for adding links is as follows:
@@ -143,7 +164,60 @@ gives:
 
 ~~strikethrough~~
 
+## Adding lists
+ This is how we create *bullet list*:
+ 
+ `- example` 
+ 
+ `- example 2` 
+ 
+ or
+ `* example 3`
+ 
+ `* example 4`
+ 
+ will give:
+ 
+ - example
+ - example 2 
+ 
+ * example 3
+ * example 4 
+ 
+ The *ordered* list is created simply with numbers:
+ 
+ `1. Example 1.1`
+ 
+ `2. Example 2.2`
+ 
+ `3. Example 3.3`
+ 
+ 
+1. Example 1.1
+2. Example 2.2
+3. Example 3.3
+
 ## The YAML header
+
+THis is an important part of the *markdown document* in which you can specify different metadata and parameters. It starts and finishes with `---` :
+ 
+`---`
+
+This would be the body of YAML header 
+
+`---` 
+
+The intendation is important. Look at the YAML header used to render this document. There are really a lot of options, among others, you can modify:
+
+ - output file type: HTML,pdf, ppt, word and many others..
+ - global graphical appearance: different `theme: ` look at the [gallery of example themes](https://www.datadreaming.org/post/r-markdown-theme-gallery/)
+- table of contents `toc: true` *impotant!->* YAML uses `true` and `yes` not `TRUE` which is used in r code  
+- author
+- date
+- section numbering
+- appearance of tables and dataframes `df_print :  ` [for options see](https://bookdown.org/yihui/rmarkdown/html-document.html#data-frame-printing)
+- varying parameters used inside code chunks and many others...
+
 
 
 # The NHANES dataset
@@ -177,6 +251,25 @@ smoking
 
 >The data in the `NHANES` dataset point that among educated americans the proportions of smoking men and woman are `r smoking`:
 
+### Rendering preater tables with kable function
+
+WIth `knitr::kable()` and `KableExtra` function we can output nicely designed tables. There are plenty of options...[Vignette on KableExtra](https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html)   
+
+```{r message=FALSE, warning=FALSE}
+#default
+smoking
+
+#kable
+library(knitr)
+kable(smoking, caption = "Table 1. The proportion of smokers among american woman and man")
+
+
+#KableExtra example
+library(kableExtra)
+kbl(smoking, caption  = "Classy style :)") %>% kable_classic(full_width = F, html_font = "Cambria")
+
+```
+
 
 ### Let`s create a simple data visalisation
 
@@ -195,7 +288,6 @@ Proportion_barchart <- NHANES %>% filter(Education == "Some College") %>%
                       theme_classic()
 
 Proportion_barchart
-
 
 ```
 ## Customising dimmensions of images and plots
@@ -220,10 +312,51 @@ Different code chunk options such as graphical display of the output or differen
  
 inside the function you can specify everything that is normally inside `{r}` -  `{r what is here can be set up globally }` with `knitr::opts_chunk$set()`
 
-## Adding figure captions
-```{r adding-figure-captions, fig.cap= "Fig.1.The proportion of smokers among woman and man"}
+## Adding figure captions inside the code chunk options
+
+ Captions can be added in two ways: 
+  - as the code chunk option in `{r fig.cap = " "}`
+  - as a part of the plot code (ggplot2 - this library will be covered in another lesson)
+ 
+```{r adding-figure-captions, fig.cap= "Fig.1.The proportion of smokers among american woman and man"}
 Proportion_barchart
+```
+## Adding figure captions inside the ggplot2 code
+```{r}
+Proportion_barchart+labs(title = "Fig.1 The proportion of educated smokers among american woman and man",
+                         subtitle = "            Which sex smokes more?",
+                         caption = "Data source: US National Health and Nutrition Examination Survey")
 
 ```
+
+## Parameters for reproducible reporting
+
+Here is where it get fancy....In the YAML header you can specify the custom parameters `params: ` that will be used to knit your document. Those parameters are referenced in the code `params$parameter_name` and can be anything that is some sort of input like : raw data, different parts of data, different way the functions work, different graphical outputs etc. Below we will take advantage of parameters to create a reproducible version of the table and plot we created previously. The parameters will be named:
+
+- **group_var** with default to: "Gender"
+- **analysis_var** with default to: "SmokeNow"
+- **education** with default to: "Some College"
+
+```{r}
+#Let`s modify the code that produces table so that it could be used for different types of analysis
+
+library(dplyr)
+reproducible_tab <- NHANES %>% filter(Education == "params$education") %>% 
+                      group_by(params$group_var) %>% 
+                      summarize(proportion = mean(
+                               params$analysis_var == "Yes", na.rm = TRUE)
+                                                              ) 
+
+#This table was created with reproducible code to show the proportion of params$analysis_var among different params$group_var with education status params$education ")
+
+reproducible_tab
+
+
+
+
+```
+
+
+
 
 
