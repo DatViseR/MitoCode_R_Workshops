@@ -342,10 +342,12 @@ Here is where it get fancy....In the YAML header you can specify the custom para
 
 library(dplyr)
 reproducible_tab <- NHANES %>% filter(Education == "params$education") %>% 
-                      group_by(params$group_var) %>% 
+                      group_by(.data[[params$group_var]]) %>% 
                       summarize(proportion = mean(
-                               params$analysis_var == "Yes", na.rm = TRUE)
+                               .data[[params$analysis_var]] == "Yes", na.rm = TRUE)
                                                               ) 
+
+# see Indirection at https://dplyr.tidyverse.org/articles/programming.html
 
 #This table was created with reproducible code to show the proportion of params$analysis_var among different params$group_var with education status params$education ")
 
