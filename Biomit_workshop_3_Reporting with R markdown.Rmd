@@ -19,12 +19,6 @@ params:
   education: Some College
 
 ---
-<style>
-
-   {color: #8b0000};
-
-</style>
-
 
 # Introduction to R Markdown 
 
@@ -337,26 +331,84 @@ Here is where it get fancy....In the YAML header you can specify the custom para
 - **analysis_var** with default to: "SmokeNow"
 - **education** with default to: "Some College"
 
-```{r}
+```{r }
 #Let`s modify the code that produces table so that it could be used for different types of analysis
 
 library(dplyr)
-reproducible_tab <- NHANES %>% filter(Education == "params$education") %>% 
+reproducible_tab <- NHANES %>% filter(Education == params$education) %>% 
                       group_by(.data[[params$group_var]]) %>% 
                       summarize(proportion = mean(
                                .data[[params$analysis_var]] == "Yes", na.rm = TRUE)
                                                               ) 
 
-# see Indirection at https://dplyr.tidyverse.org/articles/programming.html
+# Do not bother about .data[[ ]] here we will learn about it later - if you are interested see Indirection at https://dplyr.tidyverse.org/articles/programming.html
 
 #This table was created with reproducible code to show the proportion of params$analysis_var among different params$group_var with education status params$education ")
 
-reproducible_tab
+kable(reproducible_tab, caption = paste("Table 2. The proportion of", params$analysis_var, "among different ", params$group_var,  "with education status ", params$education), format = "html", table.attr = "style='width:100%;'")
+
+```
+
+
+#### ANd the reprodicible version of the barchart...
+
+```{r reproducible barchart }
+
+
+Reproducible_Proportion_barchart <- NHANES %>% filter(Education == params$education) %>% 
+                      ggplot(aes(x = .data[[params$group_var]], fill = .data[[params$analysis_var]]))+
+                      geom_bar(position = "Fill")+
+                      geom_text(aes(label=scales::percent(..count../sum(..count..))),
+                                    stat='count',position=position_fill(vjust=0.5))+
+                      theme_classic()+
+                      labs(title =  paste(" Analysis variable: ", params$analysis_var, "\n", "Grouping variable: ", params$group_var, "\n", "Education status: ", params$education))
+
+Reproducible_Proportion_barchart 
 
 
 
 
 ```
+
+## Lets give it a little more style
+
+### Adding a theme of choice
+
+In the YAML header you will find the `theme: ` key in within the `html_output: ` . You can choose a different version of theme. [See availible themes you can choose from](https://www.datadreaming.org/post/r-markdown-theme-gallery/). 
+
+### Customisation with CSS
+ 
+Modifying the appearance of the Rmarkdown HTML document with CSS can be done in the following ways:  
+
+1. As our Rmarkdown document will be knited to HTML we may use CSS file to add some custom style to it. This can be done with `css: some_style_file.css ` in the YAML header.  
+
+2. We may also add `<style>        </style>` HTML tag at the begining of our R markdown document. This will override the defaults in particular theme. Copy the following code below the YAML header to see how it works:
+```
+<style>
+body {
+  color: #960018;
+  font-family: Cambria;
+  background-color: #D3D3D3
+}
+</style>
+
+```
+3. Using an CSS code chunk with `echo= FALSE` - this will generate the `<style>   </style>` tag for you and will display css syntax highlighting which is more convenient.  
+
+```{css, eval = FALSE}
+body {
+  color: #960018;
+  font-family: Cambria;
+  background-color: #D3D3D3
+}
+
+```
+
+
+
+
+
+
 
 
 
