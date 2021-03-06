@@ -341,7 +341,7 @@ Here is where it get fancy....In the YAML header you can specify the custom para
 #Let`s modify the code that produces table so that it could be used for different types of analysis
 
 library(dplyr)
-reproducible_tab <- NHANES %>% filter(Education == "params$education") %>% 
+reproducible_tab <- NHANES %>% filter(Education == params$education) %>% 
                       group_by(.data[[params$group_var]]) %>% 
                       summarize(proportion = mean(
                                .data[[params$analysis_var]] == "Yes", na.rm = TRUE)
