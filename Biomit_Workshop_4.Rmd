@@ -1,5 +1,5 @@
 ---
-title: 'Version Control'
+title: 'Version Control and basic plotting'
 date: '2021-03-22'
 author: 'Vanessa: Mar II'
 output:
@@ -67,49 +67,94 @@ Get URL from GitHub Repository:
 * Code > Clone
 * Copy .git link (HTTPS)
 
-```{r Github}
 
-
-```
-
-
-## Brief Intro to Statistics
-### T-test, p-values, error bars
-
+## Statistics and basic visualizations
 
 [Modern Statistics for Modern Biology](https://www.huber.embl.de/msmb/Chap-Testing.html)
 
 ```{r stats}
-quantile(airquality$Temp)
-mean(airquality$Temp, na.rm=T)
+library("tidyr")
+library("dplyr")
 
-summary(airquality$Temp)
+ttest <- function(df, grp1, grp2){ 
+  x = df[grp1]
+  y = df[grp2]
+  x = as.numeric(x)
+  y = as.numeric(y)
+  results = t.test(x,y, 
+                   alternative = 'two.sided', #one-sided: 'greater' is x > y
+                   paired = T)
+  results$p.value
+}
 
-#other way to subset airquality[which(airquality$Month==6),]
+# load in Piotr Bragoszewski's MS proteomics dataset as example
+yeast.imp <- read.csv("LFQ.imp_bygroup.csv", row.names = 1)
 
-summary(subset(airquality, Month == 5)$Temp)
+yeast.imp_wide <- pivot_wider(yeast.imp[,c(1,3,4)], names_from = Sample, values_from = LFQvalue)
+rownames(yeast.imp_wide) <- yeast.imp_wide$Protein.ID
 
-boxplot(Temp ~ Month, data = airquality) 
+# FOLDCHANGE CALC
+mean <- yeast.imp %>%
+  select(-Sample) %>%
+  group_by(Group, Protein.ID) %>%
+  summarise(
+    mean=mean(LFQvalue)
+  )
 
-myttest <- t.test(airquality$Temp, airquality$Month) #Perform a t-test for difference between means
+mean <- pivot_wider(mean, names_from = Group, values_from = mean)
 
-may.june <- t.test(subset(airquality, Month == 5)$Temp, subset(airquality, Month == 6)$Temp)
-may.june
+foldchange <- data.frame(foldchange=mean$`b2-tFT_ELU` - mean$tFT_ELU) # calculate FC as difference between log2 averages
 
-jul.aug <- t.test(subset(airquality, Month == 7)$Temp, subset(airquality, Month == 8)$Temp)
-jul.aug
+rownames(foldchange) <- mean$Protein.ID
 
-may.june$estimate
-may.june$estimate[1] / may.june$estimate[2] #fold change is ratio between means
-log2(may.june$estimate[1]) - log2(may.june$estimate[2]) #or diff between logs
+#calculate raw p-value b2-tFT vs tFT for each protein
+rawpvalue = apply(yeast.imp_wide, 1, ttest, grp1=c(6:9), grp2=c(10:13))
+fdrpvalue <- p.adjust(unlist(rawpvalue), method = "fdr")
 
-jul.aug$estimate
+hist(rawpvalue)
+hist(fdrpvalue)
 
+volcano <- merge(foldchange, rawpvalue, by=0)
+colnames(volcano)[1] <- "Protein.ID"
+colnames(volcano)[3] <- "rawpvalue"
+volcano$sig <- ifelse(abs(volcano$foldchange)>1&
+                        volcano$rawpvalue<0.05,
+                      yes = TRUE, no = FALSE)
+
+yeast <- merge(yeast.imp_wide, volcano)
 ```
 
-## Simple visualizations
+### Simple visualizations
 
 ```{r visuals}
+
+rownames(yeast) <- yeast$Protein.ID
+str(yeast)
+View(yeast[,2:25])
+
+#basic plot
+plot(yeast$foldchange)
+
+?base::plot
+
+plot(yeast$foldchange, main = "Title of my plot", xlab = "Proteins", ylab = "Fold change")
+
+#super basic volcano plot
+plot(yeast$foldchange, -log(yeast$rawpvalue))
+
+#histogram
+hist(yeast$foldchange)
+
+#boxplot
+boxplot(foldchange ~ sig, data = yeast)
+
+#create heatmap of first twenty proteins
+heatmap(as.matrix(yeast[1:20,2:25]))
+
+#also possible with 'pretty heatmap' that allows more customization
+#install.packages('pheatmap')
+library(pheatmap)
+pheatmap(yeast[1:20,2:25])
 
 ```
 
@@ -117,7 +162,7 @@ jul.aug$estimate
 
 * sign up for Github account
 * make plot of your choice
-* upload to repository
+* upload code to a repository
 
 ## Tips and Tricks
 
