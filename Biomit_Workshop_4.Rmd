@@ -1,0 +1,175 @@
+---
+title: 'Version Control and basic plotting'
+date: '2021-03-22'
+author: 'Vanessa: Mar II'
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+---
+
+## Version Control with Git and GitHub
+
+#### [GitHub](https://github.com/)
+
+>Where the world builds software - 
+Millions of developers and companies build, ship, and maintain their software on GitHub—the largest and most advanced development platform in the world.
+
+* Free
+* Public and private repositories (folders where the code lives in)
+* over 50 Mio. users
+* 72% of Fortune 50 companies use it
+* Supports many languages, incl. Javascript, Python, Java, C#, PHP, HTML, Shell, C, C++, Ruby, R ... (if you're into stats, check out their [yearly report](https://octoverse.github.com/))
+
+[My GitHub account vanilink](https://github.com/vanilink)
+
+I for example uploaded the code used for the analyses of my [paper](doi.org/10.1038/s42255-020-00278-3) here so that everyone (including myself :D) can reproduce them in the future. Don't forget that a GitHub account is another way of adding to your resume/CV - it shows that you indeed have legitimate coding skills. And don't worry too much, anything is better than nothing. Make your repositories public - don't be shy! You are already doing great! 
+
+#### What is version control?
+
+> **Version control** is like a savings program for your project. By tracking and logging the changes you make to your file or file sets over time, a version-control system gives you the power to review or even restore earlier versions. Version control takes snapshots of every revision to your project. You can then access these versions to compare or restore them as needed.
+
+### [Our MitoCode Repository](https://github.com/DatViseR/MitoCode_R_Workshops)
+
+* great for collaborative coding
+
+#### What is Git?
+
+> **Git** is software for tracking changes in any set of files, usually used for coordinating work among programmers collaboratively developing source code during software development. By far, the most widely used modern version control system in the world today is Git. Git is a mature, actively maintained open source project originally developed in 2005 by Linus Torvalds, the famous creator of the Linux operating system kernel. A staggering number of software projects rely on Git for version control, including commercial projects as well as open source.
+> Git is installed and maintained on your local system (rather than in the cloud) and gives you a self-contained record of your ongoing programming versions. It can be used completely exclusive of any cloud-hosting service — you don’t even need internet access, except to download it. Branching allows you to create independent local branches in your code. This means you can try out new ideas, set aside branches for production work, jump back to earlier branches, and easily delete, merge, and recall branches at the click of a button. And that’s it. Git is a high-quality version control system.
+
+Download and install the latest version of Git: https://git-scm.com/downloads or https://git-scm.com/book/en/v2/Getting-Started-Installing-Git 
+You may already have it:
+
+* try by typing    git --version     into Terminal (Mac)/Command (Win)
+
+Since this is an important first step make sure you get this sorted, even if you are not ready to work with Git/GitHub right now. Feel free to ask questions in our [Slack channel](https://join.slack.com/t/mitocodeworkspace/shared_invite/zt-o4q15mf8-ilwjxdnS0DjfFjp8jI92Aw) so we can help you out :) 
+
+> **GitHub** is designed as a Git repository hosting service. That is an online database that allows you to keep track of and share your Git version control projects outside of your local computer/server.
+
+https://blog.devmountain.com/git-vs-github-whats-the-difference/
+
+#### How to contribute?
+
+* Fork to your account (aka copy)
+* Make a change
+* Submit Pull Request
+
+TEST
+
+#### How to use R/RStudio and Git/GitHub
+
+in RStudio:
+* File > New Project
+* Create Project from Version Control > Git
+* Clone Git Repository > URL
+
+Get URL from GitHub Repository:
+* Code > Clone
+* Copy .git link (HTTPS)
+
+
+## Statistics and basic visualizations
+
+[Modern Statistics for Modern Biology](https://www.huber.embl.de/msmb/Chap-Testing.html)
+
+```{r stats}
+library("tidyr")
+library("dplyr")
+
+ttest <- function(df, grp1, grp2){ 
+  x = df[grp1]
+  y = df[grp2]
+  x = as.numeric(x)
+  y = as.numeric(y)
+  results = t.test(x,y, 
+                   alternative = 'two.sided', #one-sided: 'greater' is x > y
+                   paired = T)
+  results$p.value
+}
+
+# load in Piotr Bragoszewski's MS proteomics dataset as example
+yeast.imp <- read.csv("LFQ.imp_bygroup.csv", row.names = 1)
+
+yeast.imp_wide <- pivot_wider(yeast.imp[,c(1,3,4)], names_from = Sample, values_from = LFQvalue)
+rownames(yeast.imp_wide) <- yeast.imp_wide$Protein.ID
+
+# FOLDCHANGE CALC
+mean <- yeast.imp %>%
+  select(-Sample) %>%
+  group_by(Group, Protein.ID) %>%
+  summarise(
+    mean=mean(LFQvalue)
+  )
+
+mean <- pivot_wider(mean, names_from = Group, values_from = mean)
+
+foldchange <- data.frame(foldchange=mean$`b2-tFT_ELU` - mean$tFT_ELU) # calculate FC as difference between log2 averages
+
+rownames(foldchange) <- mean$Protein.ID
+
+#calculate raw p-value b2-tFT vs tFT for each protein
+rawpvalue = apply(yeast.imp_wide, 1, ttest, grp1=c(6:9), grp2=c(10:13))
+fdrpvalue <- p.adjust(unlist(rawpvalue), method = "fdr")
+
+hist(rawpvalue)
+hist(fdrpvalue)
+
+volcano <- merge(foldchange, rawpvalue, by=0)
+colnames(volcano)[1] <- "Protein.ID"
+colnames(volcano)[3] <- "rawpvalue"
+volcano$sig <- ifelse(abs(volcano$foldchange)>1&
+                        volcano$rawpvalue<0.05,
+                      yes = TRUE, no = FALSE)
+
+yeast <- merge(yeast.imp_wide, volcano)
+```
+
+### Simple visualizations
+
+```{r visuals}
+
+rownames(yeast) <- yeast$Protein.ID
+str(yeast)
+View(yeast[,2:25])
+
+#basic plot
+plot(yeast$foldchange)
+
+?base::plot
+
+plot(yeast$foldchange, main = "Title of my plot", xlab = "Proteins", ylab = "Fold change")
+
+#super basic volcano plot
+plot(yeast$foldchange, -log(yeast$rawpvalue))
+
+#histogram
+hist(yeast$foldchange)
+
+#boxplot
+boxplot(foldchange ~ sig, data = yeast)
+
+#create heatmap of first twenty proteins
+heatmap(as.matrix(yeast[1:20,2:25]))
+
+#also possible with 'pretty heatmap' that allows more customization
+#install.packages('pheatmap')
+library(pheatmap)
+pheatmap(yeast[1:20,2:25])
+
+```
+
+## Homework
+
+* sign up for Github account
+* make plot of your choice
+* upload code to a repository
+
+## Tips and Tricks
+
+* tab to autofill and get suggestions in RStudio
+* arrow up in Console to access last performed code
+* Look for cheat sheets, e. g. 
+  + [Base R Cheat Sheet](https://rstudio.com/wp-content/uploads/2016/10/r-cheat-sheet-3.pdf)
+  + [RMarkdown Cheat Sheet](https://rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)
+
