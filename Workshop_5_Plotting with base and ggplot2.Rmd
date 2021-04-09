@@ -45,14 +45,15 @@ Hist_hp_freq <- hist(mtcars$hp,
                      main = "Histogram base R - density",
                      ylab = "probability density", 
                      xlab = "Horsepower",
-                     freq = FALSE ,
+                     freq = FALSE ,        #  to display probability density 
+                                          #  instead of counts on the y axis
                      col = "lightgreen")
 
 #ploting density kernel function on the second histogram 
 lines(density(mtcars$hp),
       col = "red",
-      lty = 2 ,
-      lwd = 2 )
+      lty = 2 ,   # type of line 2 for dashed
+      lwd = 2 )    #  the width of line 
 
 # bottom histograms
 # filling bottom left 
@@ -136,7 +137,7 @@ Hist_qsec_freq <- hist(mtcars$qsec,
 
 ## Histograms with ggplot2
 
-#### What is ggplot2
+#### What is ggplot2?
 
 `ggplot2` is a data visualization package and most popular package in R. Created by Hadley Wickham in 2005, ggplot2 is an implementation of Leland Wilkinson's Grammar of Graphics—a general scheme for data visualization which breaks up graphs into semantic components such as scales and layers. `ggplot2` can serve as a replacement for the `base` graphics in R and contains a number of defaults for web and print display for common plots.
 
@@ -152,7 +153,7 @@ In `ggplot2` plots are created as by  `ggplot() function` "feeded" with  `geom()
 # ggplot2 works also with only name of the columns in the dataframe 
 library(ggplot2)
 
-Hist_hp_ggplot2_1 <- ggplot(mtcars, aes(x = hp, y = ..density..))+
+Hist_hp_ggplot2_1 <- ggplot(mtcars, aes(x = hp, y = stat(density)))+
   geom_histogram()
 
 Hist_hp_ggplot2_1 
@@ -160,7 +161,7 @@ Hist_hp_ggplot2_1
 
 # Let`s make the plot similar to the one made with base R
 Hist_hp_ggplot2_2 <- ggplot(mtcars, aes(x = hp))+
-  geom_histogram(aes(fill= ..count.., y = ..density..), 
+  geom_histogram(aes(fill= stat(count), y = stat(density)), 
                  binwidth = 50, 
                  center = 75)+
   scale_x_continuous(seq(50,350,50),
@@ -215,7 +216,7 @@ draw_histogram_with_density_functions <- function(dataframe,
                                               center = binwidth+1/2*binwidth)
   {
   Plot <-  ggplot(dataframe, aes(x = column))+
-  geom_histogram(aes(fill= ..count.., y = ..density..), 
+  geom_histogram(aes(fill= stat(count), y = stat(density)), 
                  binwidth = binwidth,
                  center = center)+
   scale_x_continuous(seq(binwidth,
