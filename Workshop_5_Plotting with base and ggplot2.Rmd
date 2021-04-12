@@ -1,5 +1,5 @@
 ---
-title: "Biomiot R workshop 2 - Intro to plotting with R - creating histograms with base and ggplot2 libraries"
+title: "Biomiot R workshop 5 - Creating histograms with base and ggplot2 libraries and the \"philosphy\" of ggplot2"
 date:  "Last modified on `r format(Sys.time(), '%X    %d/%m/%y')`"
 author: "by Tomasz Stepkowski"
 output:
@@ -8,8 +8,6 @@ output:
     theme: spacelab 
     highlight: haddock
     toc: yes
-    toc_float:
-      collapsed: false
   pdf_document:
     toc: yes
 urlcolor: blue
@@ -250,6 +248,186 @@ draw_histogram_with_density_functions(airquality, airquality$Temp, 2)
 
 ```
  This is how we can store complicated codes as functions to be easily available in the future. If someone created such functions for us we may even not be interested what is happening under the hood - we are just satisfied with the final effect. R has enormous programming community and you can find libraries of functions performing great variety of operations. The libraries can be downloaded, among others, from main R repository - the [CRAN - Comprehensive R Archive Network](https://cran.r-project.org/web/views/); bionformatics repository - [Bioconductor project](https://www.bioconductor.org/) and individual programmers repositories availible at [Github](https://github.com/)
+
+
+# Where to find inspiration and learn about good practices in visaualisation
+
+With `ggplot2` it is possible to create whatever custom visualization you want. YOu can get inspired and learn about different types of charts and their proper usage on the following sites. [The R Graph gallery](https://www.r-graph-gallery.com/) provides example code for various commonly used chart types in R. On the [from Data to Viz site](https://www.data-to-viz.com/#story) you will find a proper option how to visualize your data and learn about common mistakes and good visualization practices. Some interesting tutorials and cheatsheats on ggplot2 are available at the [ggplot2tor](https://ggplot2tor.com/). Those are really  great resources. Do not be afraid - the ggplot2 graphic is based on layers - start with something simple and then add additional layers and play a little...
+
+# Customisation of the scatter plot 
+
+I will now present some options for customization of the famous scatter plot showing the relation of GDP per capita with the life expectancy. It is available in the `gapminder` library. 
+
+
+```{r message=FALSE, warning=FALSE}
+# loading,preparing and looking at the data for year 2007
+library(gapminder)
+library(tidyverse)
+Gap2007 <- gapminder %>% filter(year == 2007) %>% mutate(pop_millions = pop/1000000)
+glimpse(Gap2007)
+#mean and median lifeExp
+mean_lifeExp <- mean(Gap2007$lifeExp)
+median_lifeExp <- median(Gap2007$lifeExp)
+mean_lifeExp
+median_lifeExp
+median_income <- median(Gap2007$gdpPercap)
+median_income
+
+#calculate what part of world population lives in countries below 25th and 50th percentile
+
+World_pop <-  sum(Gap2007$pop)
+
+
+pop_below_50th_percentile <- Gap2007 %>%
+                              filter(lifeExp < median_lifeExp,
+                                    gdpPercap <median_income)%>%
+                              summarize(poor_population = sum(pop)) %>%
+                              unlist()
+                                                        
+pop_below_50th_percentile/World_pop
+```
+
+Let`s build a following plot step by step:
+ 
+```{r echo=FALSE, fig.dim= c(16,9)}
+library(knitr)
+include_graphics("Gap_Plot.jpeg")
+
+```
+ 
+We will need the following additional libraries 
+```{r}
+library(hrbrthemes)  # themes with good looking fonts and design 
+library(ggsci)       # color scales used by scientific journals
+library(ggrepel)    # easy labeling of points in dense scatter plots
+```
+
+By adding subsequent layers of information to the saved basic plot object we will achieve the final appearance of plot above....
+
+```{r}
+#creating basic plot object
+Gap_plot<-ggplot(Gap2007, aes(x= gdpPercap, y = lifeExp , color = continent))+
+  geom_point(aes(size = pop_millions))
+
+Gap_plot
+```
+
+As you can see out of the box the scale x is linear and sizes (area) of points do not correspond to real data. Let`s fix it.
+
+```{r}
+# Setting up maximum size for size scale for population
+Gap_Plot2 <- Gap_plot+  scale_size_area(max_size = 28)+
+#changing scale x to log10 and setting up breaks values to display on x axis  
+  scale_x_log10(breaks = c(500, 1000, 2000, 4000,
+                           8000, 16000, 32000, 64000))+
+ 
+# setting up scale y breaks  
+  scale_y_continuous(breaks = seq(35, 90, by = 5))
+
+Gap_Plot2
+```
+As you can see the size_area() disrupted the proper proportions of legend and plot - we can fix it with modifying image display in chunk option
+
+```{r, fig.dim= c(16,9)}
+# This chunk is displayed with {r, fig.dim= c(16,9)}
+Gap_Plot2
+
+```
+
+
+```{r,fig.dim= c(16,9)}
+# adding vertical and horizontal lines for median   
+Gap_Plot3 <- Gap_Plot2 + geom_hline(yintercept = median_lifeExp,
+                                    lty = 3, 
+                                    size = 0.8,
+                                    color = "gray30")+
+                         geom_vline(xintercept = median_income, 
+                                    lty = 3, 
+                                    size = 0.8, 
+                                    color = "gray30")
+
+Gap_Plot3
+```
+
+
+```{r,fig.dim= c(16,9)}
+# adding annotation to median lines
+Gap_Plot4 <- Gap_Plot3+
+              annotate("text",
+                       label = "median life expectancy per country = 72 years", 
+                       x = 700,
+                       y = median_lifeExp+1.5, 
+                       size = 4, 
+                       colour = "red")+
+              annotate("text", 
+                      label = "median per capita gdp \n for all countries in the world is \n 6124$",
+                      x = median_income,
+                      y = 38, 
+                      size = 4,
+                      colour = "red")
+
+Gap_Plot4
+```
+
+```{r,fig.dim= c(16,9)}
+#adding trendline 
+  Gap_Plot5 <- Gap_Plot4+ geom_smooth(aes(group = 1),  
+                                    # display grouped regression line
+                                     method = "lm", #linear model
+                                     se= FALSE,
+                                      lty = 3, 
+                                     lwd = 0.8 , 
+                                     color = "gray40")
+
+Gap_Plot5
+```
+
+```{r,fig.dim= c(16,9)}
+Gap_Plot6 <- Gap_Plot5+ 
+# adding title, subtitle and captions
+  labs(title  = "Life expectancy vs. per capita gross domestic product",
+       subtitle = "The richer the healthier",
+       caption = "Gapminder dataset" )
+
+Gap_Plot6
+```
+
+
+```{r,fig.dim= c(16,9)}
+#adding text labels for countries
+Gap_Plot7 <- Gap_Plot6 + geom_text_repel(aes(label = country), 
+                                         color = "Gray20")
+
+Gap_Plot7
+```
+
+
+```{r,fig.dim= c(16,11)}
+Gap_Plot8 <- Gap_Plot7 +
+  #adding custom theme and scale color
+  theme_ipsum_rc()+
+  scale_color_npg()+  # color scale from Nature Publishing Group
+  
+  # increasing the size of legend keys
+guides(colour = guide_legend(override.aes = list(size=12)))
+
+Gap_Plot8
+
+```
+
+> As you can see depsite the enourmous capabilities for customisation and the plenty of functions the "phiilosphy" of ggplot2 is relatively easy. Remember not to do a common mistake of not distinguishing properly beetwen aestetics aes() and graphical attributes...with understanding of the "layer approuch" you should be able to do your own plots with the help of stack overflow google and other forums...You do not have to remember all the functions attributes etc. - use the help of:
+
+* [The R Graph gallery](https://www.r-graph-gallery.com/) which provides example code for various commonly used chart types 
+
+* [Data to Viz](https://www.data-to-viz.com/#story) where you will find a proper option how to visualize your data and learn about common mistakes and good visualization practices.
+
+* [ggplot2tor](https://ggplot2tor.com/) provides some useful cheatsheats
+      
+> do your own things, google example code, modify, play and you will gain hands on experience on one of the most powerful data visalisation tools...
+
+
+
+
 
 
 
